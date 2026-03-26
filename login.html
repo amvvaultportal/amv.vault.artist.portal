@@ -1,17 +1,19 @@
-import { _supabase } from './supabase-config.js';
+<script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+    const _supabase = createClient('https://rzfjpufcdropfjwezqsa.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ6ZmpwdWZjZHJvcGZqd2V6cXNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0NzkwODUsImV4cCI6MjA5MDA1NTA4NX0.EnIaQdtkrQmf8BZGMFmEiCje6FTrlu-KiCefjVeU52Y');
 
-document.getElementById('loginForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const email = e.target.querySelector('input[type="email"]').value;
-    const btn = e.target.querySelector('button');
-    
-    btn.innerText = "SENDING ACCESS LINK...";
-    
-    const { error } = await _supabase.auth.signInWithOtp({ 
-        email,
-        options: { emailRedirectTo: window.location.origin + '/artist-portal.html' }
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = e.target.querySelector('input[type="email"]').value;
+        const btn = e.target.querySelector('button');
+        btn.innerText = "SENDING ACCESS LINK...";
+
+        const { error } = await _supabase.auth.signInWithOtp({ 
+            email,
+            options: { emailRedirectTo: window.location.origin + '/artist-portal.html' }
+        });
+
+        if (error) alert(error.message);
+        else alert("Access Link Sent! Check your email to enter the Vault.");
     });
-
-    if (error) alert(error.message);
-    else alert("Check your email! We sent your Vault Access Link.");
-});
+</script>
