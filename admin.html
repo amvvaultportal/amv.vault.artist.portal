@@ -1,24 +1,84 @@
-<script type="module">
-    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
-    const _supabase = createClient('https://rzfjpufcdropfjwezqsa.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ6ZmpwdWZjZHJvcGZqd2V6cXNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0NzkwODUsImV4cCI6MjA5MDA1NTA4NX0.EnIaQdtkrQmf8BZGMFmEiCje6FTrlu-KiCefjVeU52Y');
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AMV MASTER CONTROL | Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css">
+    <style>
+        :root { --gold: #D4AF37; --dark-bg: #050505; }
+        body { background: var(--dark-bg); color: #fff; font-family: 'Inter', sans-serif; padding: 40px; }
+        .gold-text { color: var(--gold); }
+        .bg-zinc-900 { background: #0d0d0d !important; }
+        .border-zinc-800 { border-color: #1e1e1e !important; }
+        .btn-outline-light:hover { background: var(--gold); color: #000; border-color: var(--gold); }
+        .badge.bg-warning { background-color: var(--gold) !important; }
+    </style>
+</head>
+<body>
 
-    async function loadAdmin() {
-        const { data } = await _supabase.from('releases').select('*').order('created_at', {descending: true});
-        const list = document.getElementById('adminList');
-        
-        list.innerHTML = data.map(r => `
-            <div class="p-3 mb-2 bg-zinc-900 border border-zinc-800 rounded d-flex justify-content-between align-items-center">
-                <div>
-                    <span class="badge ${r.plan_type.includes('Pro') ? 'bg-warning text-dark' : 'bg-secondary'}">${r.plan_type}</span>
-                    <h5 class="mb-0 mt-2">${r.track_title}</h5>
-                    <small class="text-muted">${r.artist_name} | ${r.genre}</small>
-                </div>
-                <div class="btn-group">
-                    <a href="${r.audio_url}" target="_blank" class="btn btn-sm btn-outline-light">WAV</a>
-                    <a href="${r.cover_url}" target="_blank" class="btn btn-sm btn-outline-light">ART</a>
-                </div>
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-5">
+            <div>
+                <h1 class="fw-900 italic gold-text mb-0">MASTER QUEUE</h1>
+                <p class="text-muted">Awaiting RouteNote Distribution</p>
             </div>
-        `).join('');
-    }
-    loadAdmin();
-</script>
+            <button class="btn btn-outline-secondary btn-sm" onclick="location.reload()">REFRESH STORAGE</button>
+        </div>
+
+        <div id="adminList">
+            <p class="text-center opacity-50">Scanning Vault...</p>
+        </div>
+    </div>
+
+    <script type="module">
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+        
+        // Your Verified Supabase Connection
+        const _supabase = createClient(
+            'https://rzfjpufcdropfjwezqsa.supabase.co', 
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ6ZmpwdWZjZHJvcGZqd2V6cXNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0NzkwODUsImV4cCI6MjA5MDA1NTA4NX0.EnIaQdtkrQmf8BZGMFmEiCje6FTrlu-KiCefjVeU52Y'
+        );
+
+        async function loadAdmin() {
+            try {
+                const { data, error } = await _supabase
+                    .from('releases')
+                    .select('*')
+                    .order('created_at', {descending: true});
+
+                if (error) throw error;
+
+                const list = document.getElementById('adminList');
+                
+                if (data.length === 0) {
+                    list.innerHTML = `<div class="text-center p-5 border border-dashed border-secondary rounded">
+                        <p class="m-0 opacity-50">The Vault is currently empty.</p>
+                    </div>`;
+                    return;
+                }
+
+                list.innerHTML = data.map(r => `
+                    <div class="p-3 mb-2 bg-zinc-900 border border-zinc-800 rounded d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="badge ${r.plan_type && r.plan_type.includes('Pro') ? 'bg-warning text-dark' : 'bg-secondary'}">
+                                ${r.plan_type || 'Go Free'}
+                            </span>
+                            <h5 class="mb-0 mt-2 fw-bold text-white">${r.track_title}</h5>
+                            <small class="text-muted">${r.artist_name} | ${r.genre || 'Afro Tech'}</small>
+                        </div>
+                        <div class="btn-group">
+                            <a href="${r.audio_url}" target="_blank" class="btn btn-sm btn-outline-light px-3">WAV</a>
+                            <a href="${r.cover_url}" target="_blank" class="btn btn-sm btn-outline-light px-3">ART</a>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                document.getElementById('adminList').innerHTML = `<p class="text-danger">Error loading vault: ${err.message}</p>`;
+            }
+        }
+
+        loadAdmin();
+    </script>
+</body>
+</html>
