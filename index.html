@@ -1,0 +1,9 @@
+// Add this to your existing <script> in index.html
+function selectPlan(planName) {
+    localStorage.setItem('selectedPlan', planName);
+    window.location.href = 'login.html';
+}
+
+// Update your HTML buttons:
+// <button onclick="selectPlan('Go Free')"> ... </button>
+// <button onclick="selectPlan('Go Pro Single')"> ... </button>
