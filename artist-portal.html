@@ -2,48 +2,57 @@
     import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
     const _supabase = createClient('https://rzfjpufcdropfjwezqsa.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ6ZmpwdWZjZHJvcGZqd2V6cXNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0NzkwODUsImV4cCI6MjA5MDA1NTA4NX0.EnIaQdtkrQmf8BZGMFmEiCje6FTrlu-KiCefjVeU52Y');
 
-    // WhatsApp Notification Function
-    const notifyWhatsApp = async (artist, title, plan) => {
-        const phone = "27xxxxxxxxx"; // YOUR PHONE HERE
-        const apiKey = "xxxxxx";      // YOUR CALLMEBOT KEY HERE
-        const msg = `🚀 *NEW VAULT UPLOAD*%0A%0A*Artist:* ${artist}%0A*Track:* ${title}%0A*Plan:* ${plan}`;
+    // 1. WhatsApp Notification Setup
+    const notifyOwner = async (artist, track, plan) => {
+        const phone = "27xxxxxxxxx"; // Your WhatsApp Number
+        const apiKey = "xxxxxx";      // Your CallMeBot API Key
+        const msg = `🚀 *AMV VAULT ALERT*%0A%0A*Artist:* ${artist}%0A*Track:* ${track}%0A*Plan:* ${plan}%0A%0A_Check Admin Tower for WAV._`;
         fetch(`https://api.callmebot.com/whatsapp.php?phone=${phone}&text=${msg}&apikey=${apiKey}`, {mode:'no-cors'});
     };
 
+    // 2. Upload Logic
     document.getElementById('uploadForm').onsubmit = async (e) => {
         e.preventDefault();
         const btn = document.getElementById('submitBtn');
-        const audioFile = document.getElementById('audioFile').files[0];
-        const coverFile = document.getElementById('coverFile').files[0];
+        const audio = document.getElementById('audioFile').files[0];
+        const cover = document.getElementById('coverFile').files[0];
         const plan = localStorage.getItem('selectedPlan') || 'Go Free';
 
         btn.disabled = true;
-        btn.innerText = "LOCKING INTO VAULT...";
+        btn.innerText = "INGESTING MASTERPIECE...";
 
         try {
-            const audioPath = `audio/${Date.now()}_${audioFile.name}`;
-            const coverPath = `covers/${Date.now()}_${coverFile.name}`;
+            const timestamp = Date.now();
+            const audioPath = `audio/${timestamp}_${audio.name}`;
+            const coverPath = `covers/${timestamp}_${cover.name}`;
 
-            await _supabase.storage.from('vault-assets').upload(audioPath, audioFile);
-            await _supabase.storage.from('vault-assets').upload(coverPath, coverFile);
+            // Upload Files
+            await _supabase.storage.from('vault-assets').upload(audioPath, audio);
+            await _supabase.storage.from('vault-assets').upload(coverPath, cover);
 
+            // Get URLs
             const { data: aUrl } = _supabase.storage.from('vault-assets').getPublicUrl(audioPath);
             const { data: cUrl } = _supabase.storage.from('vault-assets').getPublicUrl(coverPath);
 
-            await _supabase.from('releases').insert([{
+            // Save to DB
+            const { error: dbErr } = await _supabase.from('releases').insert([{
                 artist_name: document.getElementById('artistName').value,
                 track_title: document.getElementById('releaseTitle').value,
                 genre: document.getElementById('genre').value,
                 plan_type: plan,
                 audio_url: aUrl.publicUrl,
-                cover_url: cUrl.publicUrl
+                cover_url: cUrl.publicUrl,
+                status: 'Reviewing'
             }]);
 
-            await notifyWhatsApp(document.getElementById('artistName').value, document.getElementById('releaseTitle').value, plan);
+            if (dbErr) throw dbErr;
+
+            // Trigger WhatsApp and Success Page
+            await notifyOwner(document.getElementById('artistName').value, document.getElementById('releaseTitle').value, plan);
             window.location.href = 'upload-success.html';
 
         } catch (err) {
-            alert(err.message);
+            alert("Vault Error: " + err.message);
             btn.disabled = false;
         }
     };
