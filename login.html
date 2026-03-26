@@ -1,0 +1,17 @@
+import { _supabase } from './supabase-config.js';
+
+document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = e.target.querySelector('input[type="email"]').value;
+    const btn = e.target.querySelector('button');
+    
+    btn.innerText = "SENDING ACCESS LINK...";
+    
+    const { error } = await _supabase.auth.signInWithOtp({ 
+        email,
+        options: { emailRedirectTo: window.location.origin + '/artist-portal.html' }
+    });
+
+    if (error) alert(error.message);
+    else alert("Check your email! We sent your Vault Access Link.");
+});
