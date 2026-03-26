@@ -1,39 +1,50 @@
-import { _supabase } from './supabase-config.js';
+<script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+    const _supabase = createClient('https://rzfjpufcdropfjwezqsa.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ6ZmpwdWZjZHJvcGZqd2V6cXNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0NzkwODUsImV4cCI6MjA5MDA1NTA4NX0.EnIaQdtkrQmf8BZGMFmEiCje6FTrlu-KiCefjVeU52Y');
 
-const handleUpload = async (e) => {
-    e.preventDefault();
-    const btn = document.getElementById('submitBtn');
-    const audioFile = document.getElementById('audioFile').files[0];
-    const coverFile = document.getElementById('coverFile').files[0];
-    const plan = localStorage.getItem('selectedPlan') || 'Go Free';
+    // WhatsApp Notification Function
+    const notifyWhatsApp = async (artist, title, plan) => {
+        const phone = "27xxxxxxxxx"; // YOUR PHONE HERE
+        const apiKey = "xxxxxx";      // YOUR CALLMEBOT KEY HERE
+        const msg = `🚀 *NEW VAULT UPLOAD*%0A%0A*Artist:* ${artist}%0A*Track:* ${title}%0A*Plan:* ${plan}`;
+        fetch(`https://api.callmebot.com/whatsapp.php?phone=${phone}&text=${msg}&apikey=${apiKey}`, {mode:'no-cors'});
+    };
 
-    btn.disabled = true;
-    btn.innerText = "LOCKING INTO VAULT...";
+    document.getElementById('uploadForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('submitBtn');
+        const audioFile = document.getElementById('audioFile').files[0];
+        const coverFile = document.getElementById('coverFile').files[0];
+        const plan = localStorage.getItem('selectedPlan') || 'Go Free';
 
-    try {
-        // 1. Upload Files to Storage
-        const audioPath = `releases/audio/${Date.now()}_${audioFile.name}`;
-        const coverPath = `releases/covers/${Date.now()}_${coverFile.name}`;
+        btn.disabled = true;
+        btn.innerText = "LOCKING INTO VAULT...";
 
-        await _supabase.storage.from('vault-assets').upload(audioPath, audioFile);
-        await _supabase.storage.from('vault-assets').upload(coverPath, coverFile);
+        try {
+            const audioPath = `audio/${Date.now()}_${audioFile.name}`;
+            const coverPath = `covers/${Date.now()}_${coverFile.name}`;
 
-        // 2. Save Metadata for RouteNote
-        const { error: dbErr } = await _supabase.from('releases').insert([{
-            artist_name: document.getElementById('artistName').value,
-            track_title: document.getElementById('releaseTitle').value,
-            genre: document.getElementById('genre').value,
-            plan_type: plan,
-            audio_url: audioPath,
-            cover_url: coverPath,
-            status: 'Reviewing'
-        }]);
+            await _supabase.storage.from('vault-assets').upload(audioPath, audioFile);
+            await _supabase.storage.from('vault-assets').upload(coverPath, coverFile);
 
-        if (dbErr) throw dbErr;
-        window.location.href = 'upload-success.html';
+            const { data: aUrl } = _supabase.storage.from('vault-assets').getPublicUrl(audioPath);
+            const { data: cUrl } = _supabase.storage.from('vault-assets').getPublicUrl(coverPath);
 
-    } catch (err) {
-        alert("Upload Failed: " + err.message);
-        btn.disabled = false;
-    }
-};
+            await _supabase.from('releases').insert([{
+                artist_name: document.getElementById('artistName').value,
+                track_title: document.getElementById('releaseTitle').value,
+                genre: document.getElementById('genre').value,
+                plan_type: plan,
+                audio_url: aUrl.publicUrl,
+                cover_url: cUrl.publicUrl
+            }]);
+
+            await notifyWhatsApp(document.getElementById('artistName').value, document.getElementById('releaseTitle').value, plan);
+            window.location.href = 'upload-success.html';
+
+        } catch (err) {
+            alert(err.message);
+            btn.disabled = false;
+        }
+    };
+</script>
