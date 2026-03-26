@@ -1,26 +1,29 @@
-<div class="container py-5">
-    <h2 class="fw-900 italic gold-text">CONTROL TOWER</h2>
-    <div id="adminList" class="mt-4">
-        </div>
-</div>
+<body class="bg-black text-white p-5 font-sans">
+    <h1 class="fw-900 italic gold-text">AMV CONTROL TOWER</h1>
+    <div id="queue" class="mt-4"></div>
 
-<script>
-    async function loadAdmin() {
-        const { data } = await _supabase.from('releases').select('*').order('created_at', { ascending: false });
-        document.getElementById('adminList').innerHTML = data.map(track => `
-            <div class="p-3 mb-2 bg-zinc-900 border border-zinc-800 rounded d-flex justify-content-between align-items-center">
-                <div>
-                    <span class="badge ${track.plan_type === 'Free' ? 'bg-secondary' : 'bg-warning text-black'}">${track.plan_type}</span>
-                    <h5 class="mb-0 mt-1">${track.track_title}</h5>
-                    <small class="text-muted">${track.artist_name} | ISRC: ${track.isrc || 'Auto'}</small>
+    <script type="module">
+        import { _supabase } from './supabase-config.js';
+
+        async function loadQueue() {
+            const { data } = await _supabase.from('releases').select('*').order('created_at', {descending: true});
+            const container = document.getElementById('queue');
+            
+            container.innerHTML = data.map(track => `
+                <div class="p-3 mb-2 bg-zinc-900 border border-zinc-800 rounded d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="badge ${track.plan_type.includes('Pro') ? 'bg-warning text-black' : 'bg-secondary'}">${track.plan_type}</span>
+                        <h5 class="m-0 mt-1">${track.track_title}</h5>
+                        <p class="small text-muted m-0">${track.artist_name} | ${track.genre}</p>
+                    </div>
+                    <div>
+                        <a href="${track.audio_url}" class="btn btn-sm btn-outline-light">WAV</a>
+                        <a href="${track.cover_url}" class="btn btn-sm btn-outline-light">ART</a>
+                        <button onclick="updateStatus('${track.id}', 'Live')" class="btn btn-sm btn-gold">MARK LIVE</button>
+                    </div>
                 </div>
-                <div>
-                    <a href="${track.audio_url}" class="btn btn-sm btn-dark border-zinc-700">WAV</a>
-                    <a href="${track.cover_url}" class="btn btn-sm btn-dark border-zinc-700">ART</a>
-                    <button onclick="markLive('${track.id}')" class="btn btn-sm btn-gold">MARK LIVE</button>
-                </div>
-            </div>
-        `).join('');
-    }
-    loadAdmin();
-</script>
+            `).join('');
+        }
+        loadQueue();
+    </script>
+</body>
