@@ -1,0 +1,10 @@
+// Add this inside your handleUpload function
+const { data: dbErr } = await _supabase.from('releases').insert([{
+    artist_name: document.getElementById('artistName').value,
+    track_title: document.getElementById('releaseTitle').value,
+    genre: document.getElementById('genre').value,
+    plan_type: document.getElementById('distributionPlan').value, // Get R0/R350/R650
+    audio_url: audioPath,
+    cover_url: coverPath,
+    status: 'Reviewing'
+}]);
