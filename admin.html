@@ -1,29 +1,39 @@
-<body class="bg-black text-white p-5 font-sans">
-    <h1 class="fw-900 italic gold-text">AMV CONTROL TOWER</h1>
-    <div id="queue" class="mt-4"></div>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AMV VAULT | ADMIN</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css">
+    <style>
+        body { background: #000; color: #fff; padding: 40px; }
+        .track-card { background: #080808; border: 1px solid #222; padding: 20px; border-radius: 12px; margin-bottom: 10px; }
+        .gold-text { color: #D4AF37; }
+    </style>
+</head>
+<body>
+    <h1 class="fw-900 gold-text italic">AMV MASTER CONTROL</h1>
+    <div id="adminList" class="mt-4"></div>
 
     <script type="module">
-        import { _supabase } from './supabase-config.js';
+        import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+        const _supabase = createClient('https://rzfjpufcdropfjwezqsa.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ6ZmpwdWZjZHJvcGZqd2V6cXNhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0NzkwODUsImV4cCI6MjA5MDA1NTA4NX0.EnIaQdtkrQmf8BZGMFmEiCje6FTrlu-KiCefjVeU52Y');
 
-        async function loadQueue() {
+        async function loadTracks() {
             const { data } = await _supabase.from('releases').select('*').order('created_at', {descending: true});
-            const container = document.getElementById('queue');
-            
-            container.innerHTML = data.map(track => `
-                <div class="p-3 mb-2 bg-zinc-900 border border-zinc-800 rounded d-flex justify-content-between align-items-center">
+            document.getElementById('adminList').innerHTML = data.map(r => `
+                <div class="track-card d-flex justify-content-between align-items-center">
                     <div>
-                        <span class="badge ${track.plan_type.includes('Pro') ? 'bg-warning text-black' : 'bg-secondary'}">${track.plan_type}</span>
-                        <h5 class="m-0 mt-1">${track.track_title}</h5>
-                        <p class="small text-muted m-0">${track.artist_name} | ${track.genre}</p>
+                        <span class="badge bg-warning text-black">${r.plan_type}</span>
+                        <h4 class="mb-0 mt-1">${r.track_title}</h4>
+                        <p class="text-muted small">${r.artist_name}</p>
                     </div>
                     <div>
-                        <a href="${track.audio_url}" class="btn btn-sm btn-outline-light">WAV</a>
-                        <a href="${track.cover_url}" class="btn btn-sm btn-outline-light">ART</a>
-                        <button onclick="updateStatus('${track.id}', 'Live')" class="btn btn-sm btn-gold">MARK LIVE</button>
+                        <a href="${r.audio_url}" target="_blank" class="btn btn-sm btn-outline-light">WAV</a>
+                        <a href="${r.cover_url}" target="_blank" class="btn btn-sm btn-outline-light">ART</a>
                     </div>
                 </div>
             `).join('');
         }
-        loadQueue();
+        loadTracks();
     </script>
 </body>
+</html>
