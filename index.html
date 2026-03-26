@@ -1,9 +1,33 @@
-// Add this to your existing <script> in index.html
-function selectPlan(planName) {
-    localStorage.setItem('selectedPlan', planName);
-    window.location.href = 'login.html';
-}
+<div class="row g-4">
+    <div class="col-md-4">
+        <div class="price-card p-4 border border-zinc-800 rounded-4 bg-zinc-900 text-center">
+            <h5 class="fw-bold">GO FREE</h5>
+            <div class="price-val my-3 text-white">R 0</div>
+            <p class="small opacity-50">Keep 80% Royalties<br>Unlimited Uploads</p>
+            <button class="btn-vault w-100" onclick="selectPlan('Go Free')">START FREE</button>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="price-card p-4 border border-gold rounded-4 bg-zinc-900 shadow-lg text-center" style="border: 1px solid #D4AF37;">
+            <h5 class="fw-bold gold-text">PRO SINGLE</h5>
+            <div class="price-val my-3 gold-text">R 350</div>
+            <p class="small opacity-50 text-white">Keep 100% Royalties<br>Global Distribution</p>
+            <button class="btn-gold w-100" onclick="selectPlan('Go Pro Single')">GO PRO</button>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="price-card p-4 border border-zinc-800 rounded-4 bg-zinc-900 text-center">
+            <h5 class="fw-bold">PRO PROJECT</h5>
+            <div class="price-val my-3 text-white">R 650+</div>
+            <p class="small opacity-50">EPs & Albums<br>Keep 100% Royalties</p>
+            <button class="btn-vault w-100" onclick="selectPlan('Go Pro EP/Album')">GET ALBUM PLAN</button>
+        </div>
+    </div>
+</div>
 
-// Update your HTML buttons:
-// <button onclick="selectPlan('Go Free')"> ... </button>
-// <button onclick="selectPlan('Go Pro Single')"> ... </button>
+<script>
+    function selectPlan(plan) {
+        localStorage.setItem('selectedPlan', plan);
+        window.location.href = 'login.html';
+    }
+</script>
