@@ -6,14 +6,22 @@
         e.preventDefault();
         const email = e.target.querySelector('input[type="email"]').value;
         const btn = e.target.querySelector('button');
-        btn.innerText = "SENDING ACCESS LINK...";
+        
+        btn.innerText = "AUTHENTICATING...";
+        btn.disabled = true;
 
+        // Sends a Magic Link to the artist's email
         const { error } = await _supabase.auth.signInWithOtp({ 
             email,
             options: { emailRedirectTo: window.location.origin + '/artist-portal.html' }
         });
 
-        if (error) alert(error.message);
-        else alert("Access Link Sent! Check your email to enter the Vault.");
+        if (error) {
+            alert(error.message);
+            btn.innerText = "LOGIN";
+            btn.disabled = false;
+        } else {
+            alert("Check your email! Your Vault Access Link has been sent.");
+        }
     });
 </script>
